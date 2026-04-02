@@ -9,7 +9,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-
 # FRONTEND
 resource "aws_instance" "frontend" {
   ami           = data.aws_ami.amazon_linux.id
@@ -24,21 +23,22 @@ resource "aws_instance" "frontend" {
     #!/bin/bash
     yum update -y
     yum install -y httpd docker git
+
     systemctl start httpd
     systemctl enable httpd
+
     systemctl start docker
     systemctl enable docker
 
     cat <<HTML > /var/www/html/index.html
     <html>
-        <body style="text-align:center;">
-            <h1>Infraestructura DevOps funcionando :)</h1>
-            <img src="https://static.wikia.nocookie.net/esfuturama/images/1/19/Fansworth.png/revision/latest/scale-to-width-down/230?cb=20130125191001" />
-        </body>
+      <body style="text-align:center;">
+        <h1>Infraestructura DevOps funcionando 🚀</h1>
+        <img src="https://static.wikia.nocookie.net/esfuturama/images/1/19/Fansworth.png/revision/latest/scale-to-width-down/230" />
+      </body>
     </html>
-    HTML
-
-EOF
+HTML
+  EOF
 
   tags = {
     Name = "Frontend-EC2"
@@ -56,18 +56,18 @@ resource "aws_instance" "backend" {
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
   user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              # Java
-              yum install -y java-17-amazon-corretto
-              # Maven
-              yum install -y maven
-              # Docker + Git
-              yum install -y docker git
-              systemctl start docker
-              systemctl enable docker
-              echo "Backend listo para Spring Boot" > /home/ec2-user/backend.txt
-              EOF
+    #!/bin/bash
+    yum update -y
+
+    yum install -y java-17-amazon-corretto
+    yum install -y maven
+    yum install -y docker git
+
+    systemctl start docker
+    systemctl enable docker
+
+    echo "Backend listo para Spring Boot" > /home/ec2-user/backend.txt
+  EOF
 
   tags = {
     Name = "Backend-EC2"
@@ -87,19 +87,18 @@ resource "aws_instance" "servidor_datos" {
   vpc_security_group_ids = [aws_security_group.mysql.id]
 
   user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
+    #!/bin/bash
+    yum update -y
 
-              # Instalar MySQL correctamente en Amazon Linux 2
-              amazon-linux-extras enable mysql8.0
-              yum install -y mysql-community-server docker git
+    amazon-linux-extras enable mysql8.0
+    yum install -y mysql-community-server docker git
 
-              systemctl start mysqld
-              systemctl enable mysqld
+    systemctl start mysqld
+    systemctl enable mysqld
 
-              systemctl start docker
-              systemctl enable docker
-              EOF
+    systemctl start docker
+    systemctl enable docker
+  EOF
 
   tags = {
     Name = "servidor-datos-mysql"
