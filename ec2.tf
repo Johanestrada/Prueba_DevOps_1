@@ -1,6 +1,4 @@
-# =========================
 # AMI
-# =========================
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -11,40 +9,49 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# =========================
+
 # FRONTEND
-# =========================
 resource "aws_instance" "frontend" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.publica.id
 
+  key_name = "devops-key"
+
   vpc_security_group_ids = [aws_security_group.frontend_sg.id]
 
   user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y httpd docker git
-              systemctl start httpd
-              systemctl enable httpd
-              systemctl start docker
-              systemctl enable docker
-              echo "Frontend activo" > /var/www/html/index.html
-              EOF
+    #!/bin/bash
+    yum update -y
+    yum install -y httpd docker git
+    systemctl start httpd
+    systemctl enable httpd
+    systemctl start docker
+    systemctl enable docker
+
+    cat <<HTML > /var/www/html/index.html
+    <html>
+        <body style="text-align:center;">
+            <h1>Infraestructura DevOps funcionando :)</h1>
+            <img src="https://static.wikia.nocookie.net/esfuturama/images/1/19/Fansworth.png/revision/latest/scale-to-width-down/230?cb=20130125191001" />
+        </body>
+    </html>
+    HTML
+
+EOF
 
   tags = {
     Name = "Frontend-EC2"
   }
 }
 
-# =========================
 # BACKEND
-# =========================
 resource "aws_instance" "backend" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.privada.id
-  
+
+  key_name = "devops-key"
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
@@ -67,13 +74,11 @@ resource "aws_instance" "backend" {
   }
 }
 
-# =========================
 # DATA (MYSQL)
-# =========================
 resource "aws_instance" "servidor_datos" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
-  key_name      = "spa-key"
+  key_name      = "devops-key"
 
   subnet_id = aws_subnet.privada.id
 
