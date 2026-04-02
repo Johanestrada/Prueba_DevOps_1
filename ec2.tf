@@ -1,5 +1,5 @@
 # =========================
-# AMI DINÁMICA (PRO)
+# AMI
 # =========================
 data "aws_ami" "amazon_linux" {
   most_recent = true
@@ -44,16 +44,22 @@ resource "aws_instance" "backend" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.privada.id
+  
 
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
 
   user_data = <<-EOF
               #!/bin/bash
               yum update -y
+              # Java
+              yum install -y java-17-amazon-corretto
+              # Maven
+              yum install -y maven
+              # Docker + Git
               yum install -y docker git
               systemctl start docker
               systemctl enable docker
-              echo "Backend activo" > /home/ec2-user/backend.txt
+              echo "Backend listo para Spring Boot" > /home/ec2-user/backend.txt
               EOF
 
   tags = {
