@@ -1,8 +1,21 @@
 # =========================
+# AMI DINÁMICA (PRO)
+# =========================
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
+# =========================
 # FRONTEND
 # =========================
 resource "aws_instance" "frontend" {
-  ami           = "ami-0c55b159cbfafe1f0"
+  ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.publica.id
 
@@ -11,11 +24,12 @@ resource "aws_instance" "frontend" {
   user_data = <<-EOF
               #!/bin/bash
               yum update -y
-              yum install -y httpd docker
+              yum install -y httpd docker git
               systemctl start httpd
               systemctl enable httpd
               systemctl start docker
               systemctl enable docker
+              echo "Frontend activo" > /var/www/html/index.html
               EOF
 
   tags = {
@@ -27,7 +41,7 @@ resource "aws_instance" "frontend" {
 # BACKEND
 # =========================
 resource "aws_instance" "backend" {
-  ami           = "ami-0c55b159cbfafe1f0"
+  ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.privada.id
 
@@ -36,7 +50,7 @@ resource "aws_instance" "backend" {
   user_data = <<-EOF
               #!/bin/bash
               yum update -y
-              yum install -y docker
+              yum install -y docker git
               systemctl start docker
               systemctl enable docker
               echo "Backend activo" > /home/ec2-user/backend.txt
@@ -48,10 +62,10 @@ resource "aws_instance" "backend" {
 }
 
 # =========================
-# DATA (TU PARTE)
+# DATA (MYSQL)
 # =========================
 resource "aws_instance" "servidor_datos" {
-  ami           = "ami-0c55b159cbfafe1f0"
+  ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   key_name      = "spa-key"
 
@@ -64,9 +78,14 @@ resource "aws_instance" "servidor_datos" {
   user_data = <<-EOF
               #!/bin/bash
               yum update -y
-              yum install -y mysql-server docker
+
+              # Instalar MySQL correctamente en Amazon Linux 2
+              amazon-linux-extras enable mysql8.0
+              yum install -y mysql-community-server docker git
+
               systemctl start mysqld
               systemctl enable mysqld
+
               systemctl start docker
               systemctl enable docker
               EOF
