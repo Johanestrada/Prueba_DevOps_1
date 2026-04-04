@@ -33,7 +33,7 @@ resource "aws_instance" "frontend" {
     cat <<HTML > /var/www/html/index.html
     <html>
       <body style="text-align:center;">
-        <h1>Infraestructura DevOps funcionando 🚀</h1>
+        <h1>Infraestructura DevOps funcionando :)</h1>
         <img src="https://static.wikia.nocookie.net/esfuturama/images/1/19/Fansworth.png/revision/latest/scale-to-width-down/230" />
       </body>
     </html>
